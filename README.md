@@ -1,2 +1,0 @@
-# quotelijst
-Created with CodeSandbox
