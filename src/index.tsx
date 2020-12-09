@@ -1,6 +1,6 @@
 import * as React from "react";
 import { render } from "react-dom";
-import Axios from "axios";
+import Axios, { AxiosError } from "axios";
 import { Quote, QuoteProps } from "./elements/Quote";
 import "./styles.css";
 import NewQuote from "./elements/NewQuote";
@@ -11,6 +11,20 @@ interface APIQuoteProps {
   wie: string;
   wanneer: string;
   wablief: string;
+}
+
+function getQuotes(quotes, setQuotes, enteredToken) {
+  if (quotes.length === 0 && enteredToken !== "") {
+    Axios.get("/quotes")
+      .then((result) => {
+        setQuotes(result.data.quotes);
+      })
+      .catch((error) => {
+        if (error.isAxiosError && error.response.status !== 401) {
+          console.log(error);
+        }
+      });
+  }
 }
 
 function App() {
@@ -25,11 +39,7 @@ function App() {
   Axios.defaults.baseURL =
     "https://v2-api.sheety.co/9723c08921460895c35d05d4d720d96f/baggerQuotelijst";
   Axios.defaults.headers.common["Authorization"] = `Bearer ${enteredToken}`;
-  Axios.get("/quotes").then(result => {
-    if (quotes.length === 0) {
-      setQuotes(result.data.quotes);
-    }
-  });
+  getQuotes(quotes, setQuotes, enteredToken);
 
   const quoteList = quotes
     .sort(
@@ -52,7 +62,7 @@ function App() {
       <input
         placeholder="'huts voor de leden"
         defaultValue={enteredToken.toLowerCase()}
-        onChange={event => {
+        onChange={(event) => {
           if (enteredToken !== event.target.value) {
             setToken(event.target.value.toLowerCase());
           }
@@ -85,7 +95,16 @@ function App() {
                 newQuote.date.getFullYear(),
               wablief: newQuote.text
             }
-          });
+          })
+            .then(() => {
+              setQuotes([]);
+              getQuotes(quotes, setQuotes);
+            })
+            .catch((error) => {
+              if (error.isAxiosError && error.response.status !== 401) {
+                console.log(error);
+              }
+            });
         }}
       >
         Nieuwe quote toevoegen!
