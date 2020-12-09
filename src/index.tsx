@@ -13,7 +13,11 @@ interface APIQuoteProps {
   wablief: string;
 }
 
-function getQuotes(quotes, setQuotes, enteredToken) {
+function getQuotes(
+  quotes: APIQuoteProps[],
+  setQuotes: React.Dispatch<React.SetStateAction<APIQuoteProps[]>>,
+  enteredToken: string
+) {
   if (quotes.length === 0 && enteredToken !== "") {
     Axios.get("/quotes")
       .then((result) => {
@@ -98,7 +102,9 @@ function App() {
           })
             .then(() => {
               setQuotes([]);
-              getQuotes(quotes, setQuotes);
+              setTimeout(() => {
+                getQuotes(quotes, setQuotes, enteredToken);
+              }, 500);
             })
             .catch((error) => {
               if (error.isAxiosError && error.response.status !== 401) {
